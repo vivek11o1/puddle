@@ -9,3 +9,8 @@ db.sqlite3
 # Local media uploads and secrets
 media/
 .env
+.venv/
+venv/
+
+# collectstatic output
+staticfiles/
