@@ -1,64 +1,74 @@
-# Demo deployment
+# Deploy the demo (minimal steps)
 
-The project is now deployable as a small demo. It still runs locally with SQLite,
-and accepts `DATABASE_URL` when a host provides PostgreSQL.
+Everything in the repo is already prepared: SQLite fallback, static files,
+media serving, demo images, and demo data. You only need to create the Render
+web service.
 
-## Local verification
+## 1. Push
 
 ```powershell
-pip install -r requirements.txt
-python manage.py check
-python manage.py migrate
-python manage.py collectstatic --noinput
-python manage.py runserver
+git push origin main
 ```
 
-## Render (recommended for a public demo)
+## 2. Create a Render Web Service
 
-1. Push `main` to GitHub.
-2. Render dashboard → **New → Web Service** → connect `vivek11o1/puddle`.
-3. Configure:
-   - **Build command:** `pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput`
-   - **Start command:** `gunicorn puddle.wsgi:application`
-4. Create a Render **PostgreSQL** database and copy its **Internal Database URL**.
-5. Add environment variables:
+Go to https://dashboard.render.com → **New → Web Service** → connect
+`vivek11o1/puddle`.
 
-   ```txt
-   SECRET_KEY=<a-new-long-random-key>
-   DEBUG=False
-   ALLOWED_HOSTS=<your-app>.onrender.com
-   CSRF_TRUSTED_ORIGINS=https://<your-app>.onrender.com
-   DATABASE_URL=<render-postgres-internal-url>
-   ```
+Use:
 
-6. Deploy, then run `python manage.py createsuperuser` in Render Shell.
-7. Open `https://<your-app>.onrender.com/admin/`.
+- **Build command**
+  ```bash
+  pip install -r requirements.txt && python manage.py migrate --noinput && python manage.py collectstatic --noinput
+  ```
+- **Start command**
+  ```bash
+  gunicorn puddle.wsgi:application
+  ```
 
-## PythonAnywhere (simplest SQLite demo)
+## 3. Add environment variables
 
-```bash
-git clone https://github.com/vivek11o1/puddle.git
-cd puddle
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py collectstatic --noinput
-python manage.py createsuperuser
+```txt
+DEBUG=False
+SECRET_KEY=<make-up-a-long-random-string>
+ALLOWED_HOSTS=<your-app>.onrender.com
+CSRF_TRUSTED_ORIGINS=https://<your-app>.onrender.com
 ```
 
-Then add a web app with **Manual configuration**, point it at `puddle/wsgi.py`,
-activate the `.venv`, and map:
+Do **not** add `DATABASE_URL`. No PostgreSQL is needed.
 
-- `/static/` → `/home/<username>/puddle/staticfiles`
-- `/media/` → `/home/<username>/puddle/media`
+Optional: set `DEMO_ADMIN_PASSWORD` to change the demo admin password.
 
-Set `DEBUG=False`, a fresh `SECRET_KEY`, and your hostname in the WSGI file.
-Reload the web app.
+## 4. Open the app
+
+After deploy finishes, open:
+
+```txt
+https://<your-app>.onrender.com/
+```
+
+You will see demo items with images already displayed.
+
+Admin panel:
+
+```txt
+https://<your-app>.onrender.com/admin/
+```
+
+Login:
+
+```txt
+username: admin
+password: demo1234
+```
+
+Change that password immediately if you use a different
+`DEMO_ADMIN_PASSWORD`.
 
 ## Notes
 
-- `db.sqlite3`, `media/`, `.env`, and `staticfiles/` are ignored on purpose.
-- Always set a fresh `SECRET_KEY`; never reuse the one that was committed earlier.
-- On hosts with ephemeral disks, use PostgreSQL/`DATABASE_URL` and external media
-  storage; uploaded files will not survive redeploys otherwise.
+- The demo data and images are auto-created by migration `0005_seed_demo_data.py`.
+- SQLite and uploaded media live on Render's temporary disk. They reset on
+  every redeploy. That is expected for this demo.
+- Serving media through Django is fine for a demo; don't use it for a real
+  high-traffic site.
