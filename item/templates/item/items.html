@@ -1,0 +1,38 @@
+{% extends "core/base.html" %}
+
+{% block title %}Browse Items{% endblock %}
+
+{% block content %}
+<div class="mb-6 grid grid-cols-4 gap-4">
+    <div class="col-span-1">
+        <form method="get" action="{% url 'item:items' %}">
+            <input name="query" class="w-full py-6 px-6 border rounded-xl" type="text" value="{{ query }}" placeholder="Search items..">
+            <button class="mt-2 py-4 px-8 bg-teal-500 hover:bg-teal-700 text-lg text-white rounded-xl">Search</button>
+        </form>
+        <hr class="my-6">
+            <p class="font-semibold">clear filter</p>
+            <ul>
+               <li><a href="{% url 'item:items' %}" class="mt-2 py-4 px-8 inline-block bg-yellow-500 text-lg text-white rounded-xl">Clear</a>
+            </ul>
+    </div>
+    <div class="col-span-3">
+        <div class="grid grid-cols-3 gap-3">
+            {% if items %}
+                {% for item in items %}
+                    <div>
+                        <a href="{% url 'item:detail' item.id %}">
+                            <img src="{{ item.image.url }}" class="rounded-t-xl w-full h-64 object-cover">
+                            <div class="p-6 bg-white rounded-b-xl">
+                                <h2 class="text-2xl">{{ item.name }}</h2>
+                                <p class="text-gray-500">Price: {{ item.price }}$</p>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-gray-500 col-span-3">No items found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

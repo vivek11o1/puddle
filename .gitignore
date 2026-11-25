@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Django local database
+db.sqlite3
+*.sqlite3
+
+# Local media uploads and secrets
+media/
+.env
